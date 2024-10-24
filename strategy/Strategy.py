@@ -101,3 +101,14 @@ class Strategy():
 
         return target_dir
     
+    def distance(self, point1, point2):
+        return np.linalg.norm(np.array(point1) - np.array(point2)) 
+    
+    def calculate_orientation(self, target_pos, my_pos):
+        current_orientation = self.my_ori
+        target_vec = np.array(target_pos) - np.array(my_pos)
+        orientation_radians = np.arctan2(target_vec[1], target_vec[0])
+        orientation_degrees = np.degrees(orientation_radians)
+        relative_orientation = orientation_degrees
+    
+        return relative_orientation

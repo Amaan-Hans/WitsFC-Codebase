@@ -28,7 +28,7 @@ class Agent(Base_Agent):
         self.fat_proxy_cmd = "" if is_fat_proxy else None
         self.fat_proxy_walk = np.zeros(3) # filtered walk parameters for fat proxy
 
-        self.init_pos = ([-14,0],[-9,-5],[-9,0],[-9,5],[-5,-5],[-5,0],[-5,5],[-1,-6],[-1,-2.5],[-1,2.5],[-1,6])[unum-1] # initial formation
+        self.init_pos = ([-14,1],[-9,-5],[-9,0],[-9,5],[-5,-5],[-5,0],[-5,5],[-1,-6],[-1,-2.5],[-1,2.5],[-1,6])[unum-1] # initial formation
 
 
     def beam(self, avoid_center_circle=False):
@@ -92,6 +92,7 @@ class Agent(Base_Agent):
 
 
     def kick(self, kick_direction=None, kick_distance=None, abort=False, enable_pass_command=False):
+        #print(kick_direction)
         '''
         Walk to ball and kick
 
@@ -113,7 +114,7 @@ class Agent(Base_Agent):
         finished : bool
             Returns True if the behavior finished or was successfully aborted.
         '''
-        return self.behavior.execute("Dribble",None,None)
+        return self.behavior.execute("Dribble",kick_direction,None)
 
         if self.min_opponent_ball_dist < 1.45 and enable_pass_command:
             self.scom.commit_pass_command()
@@ -212,12 +213,44 @@ class Agent(Base_Agent):
 
 
     def select_skill(self,strategyData):
+        
+        MyNum = strategyData.player_unum
+        position = strategyData.my_head_pos_2d
+        if strategyData.play_mode == 20:#play on
+            enemyhasball= 
+            if MyNum == 1: #goal keeper
+                
+            elif MyNum == 2: #defender 1
+                
+            elif MyNum == 3: #defender 2
+                
+            elif MyNum == 9: #player 9 striker movement 
+                if strategyData.ball_dist<0.5: 
+                    #print(strategyData.ball_2d)
+                    strategyData.my_desired_position = (15,0)
+                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
+                    #print("direction:", strategyData.my_desired_orientation)
+                    direction = strategyData.calculate_orientation((15,0),(strategyData.ball_2d))
+                    print("here::", direction)
+                    #print(strategyData.goal_dir)
+                    #print()
+                    return self.kick(None, (15,0))#strategyData.my_desired_orientation)
+                else:
+                    strategyData.my_desired_position = (strategyData.ball_2d)
+                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
+                    return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
+            else:
+                strategyData.my_desired_position = (MyNum, 3)
+                strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
+                return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
+            
+    """     
         #--------------------------------------- 2. Decide action
 
         drawer = self.world.draw
         
         path_draw_options = self.path_manager.draw_options
-
+        
         target = (15,0) # Opponents Goal
 
         #------------------------------------------------------
@@ -251,6 +284,8 @@ class Agent(Base_Agent):
 
 
         if strategyData.active_player_unum == strategyData.robot_model.unum: # I am the active player 
+            if strategyData.active_player_unum==2:
+                return self.move((1,1))
             target = pass_reciever_selector(strategyData.player_unum, strategyData.teammate_positions, (15,0))
             drawer.line(strategyData.mypos, target, 2,drawer.Color.red,"pass line")
             return self.kickTarget(strategyData,strategyData.mypos,target)
@@ -259,7 +294,7 @@ class Agent(Base_Agent):
             return self.move(strategyData.my_desired_position, orientation=strategyData.ball_dir)
             
 
-
+ """
 
 
 

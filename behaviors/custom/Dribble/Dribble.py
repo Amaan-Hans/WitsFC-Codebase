@@ -87,7 +87,7 @@ class Dribble():
         self.approach_orientation = a1 if a1_diff < a2_diff else a2  # fixed normalized orientation
 
 
-    def execute(self, reset, orientation, is_orientation_absolute, speed=1, stop=False):
+    def execute(self, reset, orientation=None, target=(15,0), is_orientation_absolute=True, speed=1, stop=False):
         '''
         Parameters
         ----------
@@ -169,7 +169,7 @@ class Dribble():
                     else:
                         dribble_target = (15,-5)
                 else:
-                    dribble_target = None # go to goal
+                    dribble_target = target # go to goal
                 self.env.dribble_rel_orientation = self.path_manager.get_dribble_path(optional_2d_target=dribble_target)[1]
             elif is_orientation_absolute:
                 self.env.dribble_rel_orientation = M.normalize_deg( orientation - r.imu_torso_orientation )
