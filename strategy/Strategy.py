@@ -51,7 +51,7 @@ class Strategy():
         self.goal_dir = M.target_abs_angle(self.ball_2d,(15.05,0))
 
         self.PM_GROUP = world.play_mode_group
-
+        
         self.slow_ball_pos = world.get_predicted_ball_pos(0.5) # predicted future 2D ball position when ball speed <= 0.5 m/s
 
         # list of squared distances between teammates (including self) and slow ball (sq distance is set to 1000 in some conditions)
@@ -68,14 +68,54 @@ class Strategy():
 
         self.min_teammate_ball_sq_dist = min(self.teammates_ball_sq_dist)
         self.min_teammate_ball_dist = math.sqrt(self.min_teammate_ball_sq_dist)   # distance between ball and closest teammate
+        
+        sorted_teammate_ball_sq_dist = sorted(self.teammates_ball_sq_dist)
+        self.second_min_teammate_ball_sq_dist = sorted_teammate_ball_sq_dist[1]
+        
         self.min_opponent_ball_dist = math.sqrt(min(self.opponents_ball_sq_dist)) # distance between ball and closest opponent
 
         self.active_player_unum = self.teammates_ball_sq_dist.index(self.min_teammate_ball_sq_dist) + 1
 
         self.my_desired_position = self.mypos
         self.my_desired_orientation = self.ball_dir
+        self.owners = []
+        self.your_next_line = {1: "None", #joseph jostar esque
+                        2: "None",
+                        3: "None",
+                        4: "None",
+                        5: "None",
+                        6: "None",
+                        7: "None",
+                        8: "None",
+                        9: "None",
+                        10: "None",
+                        11: "None"}
+        
+        
+        # Sort the squared distances between opponents and the ball while keeping track of indices
+        sorted_opponent_indices = sorted(range(len(self.opponents_ball_sq_dist)), key=lambda i: self.opponents_ball_sq_dist[i])
 
+        # Retrieve the indices of the three closest opponents
+        first_closest_idx = sorted_opponent_indices[0]
+        second_closest_idx = sorted_opponent_indices[1]
+        third_closest_idx = sorted_opponent_indices[2]
 
+        # Store the positions of the three closest opponents as tuples
+        self.oppfirst = tuple(self.opponent_positions[first_closest_idx]) if self.opponent_positions[first_closest_idx] is not None else None
+        self.oppsecond = tuple(self.opponent_positions[second_closest_idx]) if self.opponent_positions[second_closest_idx] is not None else None
+        self.oppthird = tuple(self.opponent_positions[third_closest_idx]) if self.opponent_positions[third_closest_idx] is not None else None 
+    
+    
+    
+    
+    
+    #======================================================================================================
+    
+    
+    
+    
+    #======================================================================================================
+        
     def GenerateTeamToTargetDistanceArray(self, target, world):
         for teammate in world.teammates:
             pass
@@ -112,3 +152,45 @@ class Strategy():
         relative_orientation = orientation_degrees
     
         return relative_orientation
+    
+    def are_points_collinear(self, position, ball_pos, goal, tolerance=0.45):
+        x1, y1 = position
+        x2, y2 = ball_pos
+        x3, y3 = goal
+    
+        # Calculate slopes; handle division by zero by returning False if undefined
+        try:
+            slope1 = (y2 - y1) / (x2 - x1)
+            slope2 = (y3 - y2) / (x3 - x2)
+        except ZeroDivisionError:
+        # If both slopes are vertical (undefined), check if x-coordinates are equal
+            return abs(x1 - x2) < tolerance and abs(x2 - x3) < tolerance
+    
+        # Check if the difference between slopes is within the tolerance
+        return abs(slope1 - slope2) < tolerance
+    
+    def point_in_direction(self, position, goal, distance=0.2):
+        x1, y1 = position
+        x2, y2 = goal
+
+        # Calculate direction vector
+        direction_x = x2 - x1   
+        direction_y = y2 - y1
+
+        # Calculate magnitude of the direction vector
+        magnitude = math.sqrt(direction_x**2 + direction_y**2)
+
+        # Normalize the direction vector
+        unit_direction_x = direction_x / magnitude
+        unit_direction_y = direction_y / magnitude
+
+        # Scale the unit vector by the desired distance
+        scaled_x = unit_direction_x * distance
+        scaled_y = unit_direction_y * distance
+
+        # Calculate new position
+        new_position = (x1 + scaled_x, y1 + scaled_y)
+
+        return new_position  
+
+
