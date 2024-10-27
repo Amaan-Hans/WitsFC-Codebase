@@ -88,10 +88,7 @@ class Agent(Base_Agent):
         self.behavior.execute("Walk", target_2d, True, orientation, is_orientation_absolute, distance_to_final_target) # Args: target, is_target_abs, ori, is_ori_abs, distance
 
 
-
-
-
-    def kick(self, kick_direction=None, target=(15,0), kick_distance=None, abort=False, enable_pass_command=False):
+    def kick(self, kick_direction=None, kick_distance=None, abort=False, enable_pass_command=False):
         #print(kick_direction)
         '''
         Walk to ball and kick
@@ -248,6 +245,7 @@ class Agent(Base_Agent):
         MyNum = strategyData.player_unum
         position = strategyData.my_head_pos_2d
         ball_pos = strategyData.ball_2d
+        pred_ball = self.world.ball_2d_pred_pos
         aim =  (15.5, 0)
         if strategyData.play_mode == 20:#play on
             # if True: 
@@ -264,7 +262,7 @@ class Agent(Base_Agent):
                         
                 
             if MyNum == 1: #goal keeper
-                if strategyData.distance(ball_pos, (-15,0))<2:
+                if strategyData.distance(ball_pos, (-15,0))<5:
                     if strategyData.ball_dist<0.5 and strategyData.min_opponent_ball_dist>strategyData.ball_dist+0.2:
                         target = strategyData.second_min_teammate_ball_sq_dist
                         return self.kickTarget(strategyData,strategyData.mypos,target)
@@ -286,7 +284,7 @@ class Agent(Base_Agent):
                 if strategyData.distance(ball_pos, rest_spot)<8 and strategyData.min_opponent_ball_dist<strategyData.min_teammate_ball_dist:
                     
                     if strategyData.ball_dist<0.5 and strategyData.min_opponent_ball_dist>strategyData.ball_dist+2:
-                        target = strategyData.second_min_teammate_ball_sq_dist
+                        target = strategyData.teammate_positions[8]
                         return self.kickTarget(strategyData,strategyData.mypos,target)
                     else:
                         strategyData.my_desired_position = (strategyData.ball_2d) #move towards ball
@@ -321,9 +319,9 @@ class Agent(Base_Agent):
                             closest_point = point3
                         
                         return self.kickTarget(strategyData,strategyData.mypos,closest_point)
-                    elif strategyData.distance(strategyData.oppfirst, position)<4 and strategyData.oppfirst[0]>position[0] and strategyData.distance(strategyData.teammatefirst, position)<3.5 and strategyData.distance(strategyData.teammatefirst, strategyData.oppfirst)>3:
+                    elif strategyData.distance(strategyData.oppfirst, position)<4 and strategyData.oppfirst[0]>position[0] and strategyData.distance(strategyData.teammatesecond, position)<3.5 and strategyData.distance(strategyData.teammatesecond, strategyData.oppfirst)>3:
                         
-                        return self.kickTarget(strategyData,strategyData.mypos,strategyData.teammatefirst)
+                        return self.kickTarget(strategyData,strategyData.mypos,strategyData.teammatesecond)
                     #print(strategyData.ball_2d)
                     strategyData.my_desired_position = (15,0)
                     strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
@@ -357,12 +355,14 @@ class Agent(Base_Agent):
                 else:
                     rest_spot = (12,-3)
                 if strategyData.active_player_unum == MyNum:
+                    if strategyData.distance(ball_pos, (15,0))<4 and strategyData.distance(ball_pos, position)<0.5:
+                        return self.kickTarget(strategyData,strategyData.mypos,(15,0))
                     if strategyData.distance(ball_pos, position)>0.5:
                         strategyData.my_desired_position = (strategyData.ball_2d)
                         strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
                         return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation) 
                     else:
-                        return self.kick(None, (15.5, 0))
+                        self.newKickdef(strategyData,MyNum, position, ball_pos, aim)
                 elif strategyData.distance(position, rest_spot)>1.5:
                     strategyData.my_desired_position = (rest_spot)
                     strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
