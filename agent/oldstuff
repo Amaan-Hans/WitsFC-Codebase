@@ -264,38 +264,29 @@ class Agent(Base_Agent):
                         
                 
             if MyNum == 1: #goal keeper
-                if strategyData.distance(ball_pos, (-15,0))<7:
-                    if strategyData.ball_dist<0.5 and strategyData.min_opponent_ball_dist>strategyData.ball_dist+1:
-                        ahead = strategyData.get_player_ahead(position)
-                        if ahead[0]!=position[0] and ahead[1]!= position[1]:
-                            return self.kickTarget(strategyData,strategyData.mypos,ahead)
-                        else: 
-                            return self.kickTarget(strategyData,strategyData.mypos,strategyData.teammate_positions[9])
-                    elif strategyData.distance(position, (-15,0))<4:
+                if strategyData.distance(ball_pos, (-15,0))<5:
+                    if strategyData.ball_dist<0.5 and strategyData.min_opponent_ball_dist>strategyData.ball_dist+0.2:
+                        target = strategyData.second_min_teammate_ball_sq_dist
+                        return self.kickTarget(strategyData,strategyData.mypos,target)
+                    else:
                         strategyData.my_desired_position = (strategyData.ball_2d)
                         strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
                         return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-                    else:
-                        strategyData.my_desired_position = ((-14,0))
-                        strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.ball_2d)
-                        return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)   
                 else:
                     strategyData.my_desired_position = ((-14,0))
                     strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.ball_2d)
                     return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
                     
-            elif MyNum == 2 or MyNum == 3 or MyNum == 4: #defender 1
+            elif MyNum == 2 or MyNum == 3: #defender 1
                 rest_spot = (0,0)
                 if MyNum == 2:
                     rest_spot = (-11,4)
-                elif MyNum == 3:
+                else:
                     rest_spot = (-11,-4)
-                elif MyNum == 4:
-                    rest_spot = (-11, 0)
                 if strategyData.distance(ball_pos, rest_spot)<8 and strategyData.min_opponent_ball_dist<strategyData.min_teammate_ball_dist:
                     
-                    if strategyData.ball_dist<0.5 and strategyData.min_opponent_ball_dist>strategyData.ball_dist:
-                        target = (0.0)
+                    if strategyData.ball_dist<0.5 and strategyData.min_opponent_ball_dist>strategyData.ball_dist+2:
+                        target = strategyData.teammate_positions[8]
                         return self.kickTarget(strategyData,strategyData.mypos,target)
                     else:
                         strategyData.my_desired_position = (strategyData.ball_2d) #move towards ball
@@ -306,125 +297,95 @@ class Agent(Base_Agent):
                     strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.ball_2d)
                     return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation, avoid_obstacles=True, is_aggressive=True)
                 
-            elif MyNum == 10: #original striker
-                if MyNum == strategyData.active_player_unum or strategyData.min_opponent_ball_dist<strategyData.min_teammate_ball_dist:
-                    if strategyData.ball_dist > 0.5:
-                        strategyData.my_desired_position = (strategyData.ball_2d) #move towards ball
-                        strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                        return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-                    else:
-                        ahead = strategyData.get_player_ahead(position)
-                        #is goal in range
-                        if strategyData.distance(position,(15,0))<4:
-                            self.kickTarget(strategyData,strategyData.mypos,(15,0))
-                        elif ahead[0]!=position[0] and ahead[1]!= position[1]:
-                            return self.kickTarget(strategyData,strategyData.mypos,ahead)
+            elif MyNum == 9: #player 9 striker movement 
+                #print(strategyData.get_player_ahead(position))
+                ahead = strategyData.get_player_ahead(position)
+                if strategyData.ball_dist<0.5:
+                    print(strategyData.oppfirst) 
+                    #print("opp dist:", strategyData.min_opponent_ball_dist, "ball dist", strategyData.ball_dist, "distance", strategyData.distance(position,(15,0)))
+                    if strategyData.distance(position, (15,0))<4:
+                        point1 = (15, 0.5)
+                        point2 = (15, 0)
+                        point3 = (15, -0.5)
+
+                        # Calculate distances
+                        D1 = strategyData.distance(position, point1)
+                        D2 = strategyData.distance(position, point2)
+                        D3 = strategyData.distance(position, point3)
+
+                        # Find the minimum distance and corresponding point
+                        min_distance = min(D1, D2, D3)
+
+                        if min_distance == D1:
+                            closest_point = point1
+                        elif min_distance == D2:
+                            closest_point = point2
                         else:
-                            return self.newKickdef(strategyData,MyNum, position, ball_pos, (15,0))
-                elif strategyData.ball_dist>3:
-                    strategyData.my_desired_position = (strategyData.ball_2d) #move towards ball
+                            closest_point = point3
+                        
+                        return self.kickTarget(strategyData,strategyData.mypos,closest_point)
+                    elif strategyData.distance(strategyData.oppfirst, position)<4 and strategyData.oppfirst[0]>position[0] and strategyData.distance(ahead, position)<3.5 and strategyData.distance(ahead, strategyData.oppfirst)>1.5:
+                        
+                        return self.kickTarget(strategyData,strategyData.mypos,ahead)
+                    #print(strategyData.ball_2d)
+                    strategyData.my_desired_position = (15,0)
+                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
+                    #print("direction:", strategyData.my_desired_orientation)
+                    direction = strategyData.calculate_orientation((15,0),(strategyData.ball_2d))
+                    #print("here::", direction)
+                    #print(strategyData.goal_dir)
+                    #print()
+                    return self.newKickdef(strategyData,MyNum, position, ball_pos, aim)#strategyData.my_desired_orientation)
+                elif strategyData.min_opponent_ball_dist<0.5 or MyNum == strategyData.active_player_unum or strategyData.ball_dist>2:
+                    strategyData.my_desired_position = (strategyData.ball_2d)
                     strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
                     return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-            elif MyNum == 11: #support stricker
-                if MyNum == strategyData.active_player_unum or strategyData.min_opponent_ball_dist<strategyData.min_teammate_ball_dist:
-                    if strategyData.ball_dist > 0.5:
-                        strategyData.my_desired_position = (strategyData.ball_2d) #move towards ball
-                        strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                        return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-                    else:
-                        ahead = strategyData.get_player_ahead(position)
-                        #is goal in range
-                        if strategyData.distance(position,(15,0))<4:
-                            self.kickTarget(strategyData,strategyData.mypos,(15,0))
-                        elif ahead[0]!=position[0] and ahead[1]!= position[1]:
-                            return self.kickTarget(strategyData,strategyData.mypos,ahead)
-                        else:
-                            return self.newKickdef(strategyData,MyNum, position, ball_pos, (15,0))
-                elif strategyData.distance((min(ball_pos[0]+3, 14), min(ball_pos[1]+3, 9)), position)>0.5:
-                    strategyData.my_desired_position = (min(ball_pos[0]+3, 14), min(ball_pos[1]+3, 9)) #move towards ball
-                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                    return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-            elif MyNum == 7: #support stricker
-                if MyNum == strategyData.active_player_unum or strategyData.min_opponent_ball_dist<strategyData.min_teammate_ball_dist:
-                    if strategyData.ball_dist > 0.5:
-                        strategyData.my_desired_position = (strategyData.ball_2d) #move towards ball
-                        strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                        return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-                    else:
-                        ahead = strategyData.get_player_ahead(position)
-                        #is goal in range
-                        if strategyData.distance(position,(15,0))<=4:
-                            self.kickTarget(strategyData,strategyData.mypos,(15,0))
-                        elif ahead[0]!=position[0] and ahead[1]!= position[1]:
-                            return self.kickTarget(strategyData,strategyData.mypos,ahead)
-                        else:
-                            return self.newKickdef(strategyData,MyNum, position, ball_pos, (15,0))
-                elif strategyData.distance((max(ball_pos[0]-3, -13), max(ball_pos[1]-3, -9)), position)>0.5:
-                    strategyData.my_desired_position = (max(ball_pos[0]-3, -13), max(ball_pos[1]-3, -9)) #move towards ball
-                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                    return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-            elif MyNum == 8: #support stricker
-                if MyNum == strategyData.active_player_unum or strategyData.min_opponent_ball_dist<strategyData.min_teammate_ball_dist:
-                    if strategyData.ball_dist > 0.5:
-                        strategyData.my_desired_position = (strategyData.ball_2d) #move towards ball
-                        strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                        return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-                    else:
-                        ahead = strategyData.get_player_ahead(position)
-                        #is goal in range
-                        if strategyData.distance(position,(15,0))<4:
-                            self.kickTarget(strategyData,strategyData.mypos,(15,0))
-                        elif ahead[0]!=position[0] and ahead[1]!= position[1]:
-                            return self.kickTarget(strategyData,strategyData.mypos,ahead)
-                        else:
-                            return self.newKickdef(strategyData,MyNum, position, ball_pos, (15,0))
-                elif strategyData.distance((max(ball_pos[0]-3, -12), min(ball_pos[1]+3, 9)), position)>0.5:
-                    strategyData.my_desired_position = (max(ball_pos[0]-3, -12), min(ball_pos[1]+3, 9)) #move towards ball
-                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                    return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-            elif MyNum == 6: #support stricker
-                if MyNum == strategyData.active_player_unum or strategyData.min_opponent_ball_dist<strategyData.min_teammate_ball_dist:
-                    if strategyData.ball_dist > 0.5:
-                        strategyData.my_desired_position = (strategyData.ball_2d) #move towards ball
-                        strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                        return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-                    else:
-                        ahead = strategyData.get_player_ahead(position)
-                        #is goal in range
-                        if strategyData.distance(position,(15,0))<4:
-                            self.kickTarget(strategyData,strategyData.mypos,(15,0))
-                        elif ahead[0]!=position[0] and ahead[1]!= position[1]:
-                            return self.kickTarget(strategyData,strategyData.mypos,ahead)
-                        else:
-                            return self.newKickdef(strategyData,MyNum, position, ball_pos, (15,0))
-                elif strategyData.distance((min(ball_pos[0]+3, 14), max(ball_pos[1]-3, -9)), position)>0.5:
-                    strategyData.my_desired_position = (min(ball_pos[0]+3, 14), max(ball_pos[1]-3, -9)) #move towards ball
-                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                    return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-            elif MyNum == 9 or MyNum == 5: #intercept 
+
+            elif MyNum == 10 or MyNum == 11: #player 10 striker moveme
+                return
+            
+            elif MyNum == 4 or MyNum == 5: #intercept 
                 rest_spot = (0,0)
-                if MyNum == 9:
+                if MyNum == 4:
                     rest_spot = (12,3)
                 else:
                     rest_spot = (12,-3)
-                if MyNum == strategyData.active_player_unum:
-                    if strategyData.ball_dist > 0.5:
-                        strategyData.my_desired_position = (strategyData.ball_2d) #move towards ball
+                if strategyData.active_player_unum == MyNum:
+                    if strategyData.distance(ball_pos, (15,0))<4 and strategyData.distance(ball_pos, position)<0.5:
+                        return self.kickTarget(strategyData,strategyData.mypos,(15,0))
+                    if strategyData.distance(ball_pos, position)>0.5:
+                        strategyData.my_desired_position = (strategyData.ball_2d)
+                        strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
+                        return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation) 
+                    else:
+                        self.newKickdef(strategyData,MyNum, position, ball_pos, aim)
+                elif strategyData.distance(position, rest_spot)>1.5:
+                    strategyData.my_desired_position = (rest_spot)
+                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
+                    return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
+            elif MyNum == 6 or MyNum == 7: #opps thorns
+                if strategyData.ball_dist<0.5 or MyNum == strategyData.active_player_unum:
+                    return self.newKickdef(strategyData,MyNum, position, ball_pos, aim)
+                else:
+                    first =strategyData.oppfirst
+                    if MyNum == 6 and strategyData.min_opponent_ball_dist<strategyData.min_teammate_ball_dist:
+                        second = strategyData.oppsecond
+                        thornpos = ((first[0] + second[0]) / 2, (first[1] + second[1]) / 2)
+                        strategyData.my_desired_position = (thornpos)
                         strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
                         return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-                    else:
-                        if strategyData.distance(position,(15,0))<4:
-                            self.kickTarget(strategyData,strategyData.mypos,(15,0))
-                        else:
-                            return self.newKickdef(strategyData,MyNum, position, ball_pos, (15,0))
-                elif strategyData.min_opponent_ball_dist>strategyData.min_teammate_ball_dist:
-                    strategyData.my_desired_position = ball_pos #move towards ball
-                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                    return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-                elif strategyData.distance(position, rest_spot)>2 or strategyData.distance(position, ball_pos)<1:
-                    strategyData.my_desired_position = rest_spot #move towards ball
-                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
-                    return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
+                        #print(strategyData.oppfirst, strategyData.oppsecond, strategyData.oppsecond)
+                    elif strategyData.min_opponent_ball_dist<strategyData.min_teammate_ball_dist:
+                        second = strategyData.oppthird
+                        thornpos = ((first[0] + second[0]) / 2, (first[1] + second[1]) / 2)
+                        strategyData.my_desired_position = (thornpos)
+                        strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
+                        return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
+                        #print(strategyData.oppfirst, strategyData.oppsecond, strategyData.oppsecond)
+            else:
+                strategyData.my_desired_position = (MyNum, 3)
+                strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
+                return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
         elif self.world.play_mode == self.world.M_OUR_KICKOFF:
             if MyNum == 10:
                 if strategyData.distance(position, (0,0))>1:

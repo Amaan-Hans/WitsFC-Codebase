@@ -329,3 +329,16 @@ class Strategy():
         else:
             # If the angle is >= 80 degrees, move directly towards startat
             return tuple(startat)
+    def get_player_ahead(self, position):
+        ind = None
+        distance = float('inf')  # Initialize to a very large number
+
+        for i in range(11):
+            if self.teammate_positions[i][0] > position[0] + 1.5:  # Check if player is ahead
+                current_distance = self.distance(self.teammate_positions[i], position)
+                if current_distance < distance:
+                    ind = i
+                    distance = current_distance
+
+        # Return the closest teammate ahead or the position itself if none found
+        return self.teammate_positions[ind] if ind is not None else position
