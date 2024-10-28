@@ -88,6 +88,9 @@ class Agent(Base_Agent):
         self.behavior.execute("Walk", target_2d, True, orientation, is_orientation_absolute, distance_to_final_target) # Args: target, is_target_abs, ori, is_ori_abs, distance
 
 
+
+
+
     def kick(self, kick_direction=None, kick_distance=None, abort=False, enable_pass_command=False):
         #print(kick_direction)
         '''
@@ -245,7 +248,6 @@ class Agent(Base_Agent):
         MyNum = strategyData.player_unum
         position = strategyData.my_head_pos_2d
         ball_pos = strategyData.ball_2d
-        pred_ball = self.world.ball_2d_pred_pos
         aim =  (15.5, 0)
         if strategyData.play_mode == 20:#play on
             # if True: 
