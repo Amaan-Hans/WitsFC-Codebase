@@ -336,7 +336,7 @@ class Strategy():
         for i in range(11):
             if self.teammate_positions[i][0] > position[0] + 1.5:  # Check if player is ahead
                 current_distance = self.distance(self.teammate_positions[i], position)
-                if current_distance < distance:
+                if current_distance < distance and distance>2:
                     ind = i
                     distance = current_distance
 

@@ -271,7 +271,7 @@ class Agent(Base_Agent):
                             return self.kickTarget(strategyData,strategyData.mypos,ahead)
                         else: 
                             return self.kickTarget(strategyData,strategyData.mypos,strategyData.teammate_positions[9])
-                    elif strategyData.distance(position, (-15,0))<4:
+                    else:
                         strategyData.my_desired_position = (strategyData.ball_2d)
                         strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
                         return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
@@ -441,7 +441,15 @@ class Agent(Base_Agent):
                     strategyData.my_desired_position = (thornpos)
                     strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
                     return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation)
-                    
+        elif self.world.play_mode == self.world.M_OUR_CORNER_KICK:
+            if MyNum == strategyData.active_player_unum:
+                if strategyData.ball_dist>0.5:
+                    strategyData.my_desired_position = (thornpos)
+                    strategyData.my_desired_orientation = strategyData.GetDirectionRelativeToMyPositionAndTarget(strategyData.my_desired_position)
+                    return self.move(strategyData.my_desired_position, orientation=strategyData.my_desired_orientation) 
+                else: 
+                    return self.kickTarget(strategyData,strategyData.mypos,strategyData.teammate_positions[8])
+                           
     """     
         #--------------------------------------- 2. Decide action
 
